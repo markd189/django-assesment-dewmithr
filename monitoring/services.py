@@ -1,3 +1,10 @@
+"""!@file services.py
+@brief Domain services for telemetry processing and alert generation.
+
+This module hooks into Telemetry creation and evaluates active AlertRules
+to generate Alerts.
+"""
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Telemetry, AlertRule, Alert
@@ -5,6 +12,14 @@ from .models import Telemetry, AlertRule, Alert
 
 @receiver(post_save, sender=Telemetry)
 def check_alert_rules(sender, instance, created, **kwargs):
+    """!@brief Signal receiver for newly created telemetry.
+
+    @param sender Model class.
+    @param instance Telemetry instance.
+    @param created Whether the object was created.
+    @param kwargs Additional signal args.
+    """
+
     if not created:
         return  # only trigger on new telemetry
 
@@ -35,6 +50,15 @@ def check_alert_rules(sender, instance, created, **kwargs):
 
 
 def create_alert(device, rule, message):
+    """!@brief Create an alert if there is no existing OPEN alert for the same rule.
+
+    This prevents repeated alerts while an issue is still open.
+
+    @param device Device instance.
+    @param rule AlertRule instance.
+    @param message Human-readable alert message.
+    """
+
     if Alert.objects.filter(device=device, rule=rule, state="OPEN").exists():
         return
 

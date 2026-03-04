@@ -1,3 +1,13 @@
+"""!@file models.py
+ @brief Database models for the device monitoring domain.
+
+ This module defines the core entities:
+ - Device: a user-owned monitored device.
+ - Telemetry: incoming metrics/status samples for a device.
+ - AlertRule: per-device thresholds/conditions.
+ - Alert: generated events when rules are violated.
+ """
+
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
@@ -7,6 +17,12 @@ from django.contrib.auth.models import User
 # DEVICE MODEL
 # -------------------------
 class Device(models.Model):
+    """!@brief A device owned by a user.
+
+    The `device_id` UUID is the external identifier used by devices when posting
+    telemetry to the ingest endpoint.
+    """
+
     DEVICE_TYPES = [
         ("SENSOR", "Sensor"),
         ("CAMERA", "Camera"),
@@ -36,6 +52,11 @@ class Device(models.Model):
 # TELEMETRY MODEL
 # -------------------------
 class Telemetry(models.Model):
+    """!@brief A telemetry datapoint emitted by a device.
+
+    Each telemetry record captures status and key metrics at a timestamp.
+    """
+
     STATUS_CHOICES = [
         ("ONLINE", "Online"),
         ("OFFLINE", "Offline"),
@@ -68,6 +89,11 @@ class Telemetry(models.Model):
 # ALERT RULE MODEL
 # -------------------------
 class AlertRule(models.Model):
+    """!@brief Defines an alerting condition for a specific device.
+
+    Rules can be threshold-based (CPU/MEMORY/TEMP) or state-based (OFFLINE).
+    """
+
     RULE_TYPES = [
         ("CPU_HIGH", "CPU High"),
         ("MEMORY_HIGH", "Memory High"),
@@ -107,6 +133,14 @@ class AlertRule(models.Model):
 # ALERT MODEL
 # -------------------------
 class Alert(models.Model):
+    """!@brief An alert generated when telemetry violates an AlertRule.
+
+    Alerts have a lifecycle state:
+    - OPEN: newly created and not yet addressed.
+    - ACK: acknowledged by a user.
+    - RESOLVED: resolved/closed.
+    """
+
     STATE_CHOICES = [
         ("OPEN", "Open"),
         ("ACK", "Acknowledged"),
